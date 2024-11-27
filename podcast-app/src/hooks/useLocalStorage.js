@@ -1,23 +1,26 @@
 import { useState, useEffect } from 'react';
 
+// A custom hook that manages state in localStorage
 export function useLocalStorage(key, initialValue) {
-  const [value, setValue] = useState(() => {
+  // Initialize state from localStorage or use initial value
+  const [storedValue, setStoredValue] = useState(() => {
     try {
       const item = window.localStorage.getItem(key);
       return item ? JSON.parse(item) : initialValue;
     } catch (error) {
-      console.error(error);
+      console.warn(`Error reading localStorage key "${key}":`, error);
       return initialValue;
     }
   });
 
+  // Update localStorage when state changes
   useEffect(() => {
     try {
-      window.localStorage.setItem(key, JSON.stringify(value));
+      window.localStorage.setItem(key, JSON.stringify(storedValue));
     } catch (error) {
-      console.error(error);
+      console.warn(`Error setting localStorage key "${key}":`, error);
     }
-  }, [key, value]);
+  }, [key, storedValue]);
 
-  return [value, setValue];
+  return [storedValue, setStoredValue];
 }

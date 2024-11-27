@@ -1,69 +1,110 @@
-
+// src/components/layout/Sidebar.jsx
 import React from 'react';
-import { Home, Heart, Clock, Sun, Moon } from 'lucide-react';
+import { Home, Heart, Clock, ChevronLeft, ChevronRight } from 'lucide-react';
 import { GENRE_MAP } from '../../constants/genres';
 
 export function Sidebar({ 
   currentView, 
-  setCurrentView, 
-  isDark, 
-  setIsDark, 
-  showMobileMenu 
+  onViewChange, 
+  showMobile, 
+  onCloseMobile,
+  isCollapsed,
+  onToggleCollapse,
+  selectedGenre,
+  onGenreSelect 
 }) {
+  // Define navigation items with their icons and labels
+  const navItems = [
+    { id: 'home', icon: Home, label: 'Home' },
+    { id: 'favorites', icon: Heart, label: 'Favorites' },
+    { id: 'recent', icon: Clock, label: 'Recently Played' }
+  ];
+
   return (
-    <aside className={`
-      ${showMobileMenu ? 'block' : 'hidden'} 
-      md:block fixed md:relative z-50 md:z-0 w-64 h-full 
-      ${isDark ? 'bg-gray-800 text-white' : 'bg-white'} 
-      shadow-lg
-    `}>
-      {/* Sidebar content */}
-      <div className="p-6">
+    <aside 
+      className={`
+        fixed inset-y-0 left-0 z-50 bg-white dark:bg-gray-800 shadow-lg
+        transform transition-all duration-300 ease-in-out
+        ${showMobile ? 'translate-x-0' : '-translate-x-full'}
+        ${isCollapsed ? 'w-16' : 'w-64'}
+        md:relative md:translate-x-0
+      `}
+    >
+      {/* Sidebar content container */}
+      <div className={`${isCollapsed ? 'p-2' : 'p-6'}`}>
+        {/* Header section with app title and collapse toggle */}
         <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center space-x-2">
-            <img src="/api/placeholder/32/32" alt="Cranbery logo" className="w-8 h-8 rounded-full bg-purple-100" />
-            <h1 className="text-2xl font-bold text-purple-600">Cranbery</h1>
-          </div>
-          
+          {!isCollapsed && (
+            <h1 className="text-2xl font-bold text-purple-600 dark:text-purple-400">
+              Podcast
+            </h1>
+          )}
+          {/* Desktop-only collapse button */}
           <button
-            onClick={() => setIsDark(!isDark)}
-            className={`p-2 rounded-lg ${
-              isDark ? 'text-gray-400 hover:text-gray-300' : 'text-gray-600 hover:text-gray-900'
-            }`}
-            aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+            onClick={onToggleCollapse}
+            className="hidden md:block p-2 rounded-full hover:bg-gray-100 
+                     dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300"
+            aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
           >
-            {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+            {isCollapsed ? (
+              <ChevronRight className="w-5 h-5" />
+            ) : (
+              <ChevronLeft className="w-5 h-5" />
+            )}
           </button>
         </div>
-        
-        {/* Navigation */}
-        <nav className="space-y-4">
-          {/* Navigation buttons */}
+
+        {/* Navigation section */}
+        <nav className="space-y-2">
+          {navItems.map(({ id, icon: Icon, label }) => (
+            <button
+              key={id}
+              onClick={() => onViewChange(id)}
+              className={`
+                w-full flex items-center ${isCollapsed ? 'justify-center' : 'justify-start'} 
+                space-x-3 px-3 py-2 rounded-lg transition-colors duration-200
+                ${currentView === id 
+                  ? 'bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-400'
+                  : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'}
+              `}
+              title={isCollapsed ? label : undefined}
+            >
+              <Icon className="w-5 h-5" />
+              {!isCollapsed && <span>{label}</span>}
+            </button>
+          ))}
         </nav>
 
-        {/* Genre Filter */}
-        <div className="mt-8">
-          <h2 className={`text-sm font-semibold mb-4 ${
-            isDark ? 'text-gray-400' : 'text-gray-500'
-          }`}>
-            GENRES
-          </h2>
-          <div className="space-y-2">
-            {Object.entries(GENRE_MAP).map(([id, title]) => (
-              <button
-                key={id}
-                className={`text-sm w-full text-left px-2 py-1 rounded 
-                  ${isDark ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-600 hover:bg-gray-100'}`}
-              >
-                {title}
-              </button>
-            ))}
+        {/* Genre filters section - only shown when sidebar is expanded */}
+        {!isCollapsed && (
+          <div className="mt-8">
+            <h2 className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-4">
+              GENRES
+            </h2>
+            <div className="space-y-2">
+              {Object.entries(GENRE_MAP).map(([id, title]) => (
+                <button
+                  key={id}
+                  onClick={() => onGenreSelect(id)}
+                  className={`
+                    w-full text-left px-3 py-2 text-sm rounded-lg
+                    transition-colors duration-200 flex justify-between items-center
+                    ${selectedGenre === id 
+                      ? 'bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-400'
+                      : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'}
+                  `}
+                >
+                  <span>{title}</span>
+                  {/* Show 'Clear' text only when this genre is selected */}
+                  {selectedGenre === id && (
+                    <span className="text-xs opacity-70">(Clear)</span>
+                  )}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </aside>
   );
 }
-
-
-

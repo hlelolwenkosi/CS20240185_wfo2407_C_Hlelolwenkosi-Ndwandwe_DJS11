@@ -1,3 +1,4 @@
+// Map of genre IDs to their titles
 export const GENRE_MAP = {
     1: 'Personal Growth',
     2: 'Investigative Journalism',
@@ -10,5 +11,6 @@ export const GENRE_MAP = {
     9: 'Kids and Family'
   };
   
+  // Helper functions for working with genres
   export const getGenreTitle = (id) => GENRE_MAP[id] || 'Unknown Genre';
   export const getGenreTitles = (ids) => ids?.map(id => GENRE_MAP[id]).filter(Boolean) || [];
