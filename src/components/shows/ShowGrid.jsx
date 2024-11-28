@@ -1,4 +1,5 @@
 import React from 'react';
+import { GENRE_MAP } from '../../constants/genres';
 
 export const ShowGrid = ({ show, onShowSelect, favorites, onToggleFavorite }) => {
   const isFavorite = favorites.some(fav => fav.id === show.id);
@@ -56,14 +57,13 @@ export const ShowGrid = ({ show, onShowSelect, favorites, onToggleFavorite }) =>
         <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
           Seasons: {show.seasons}
         </p>
-        <div className="flex flex-wrap gap-2 mb-3">
-          {show.genres?.map((genre, index) => (
+        <div className="flex flex-wrap gap-2">
+          {show.genres.map(genreId => (
             <span
-              key={index}
-              className="px-2 py-1 text-xs bg-purple-100 dark:bg-purple-900 
-                       text-purple-800 dark:text-purple-100 rounded-full"
+              key={genreId}
+              className="text-sm text-gray-500 dark:text-gray-400 mb-2"
             >
-              {genre}
+              Genre: {GENRE_MAP[genreId]}
             </span>
           ))}
         </div>
