@@ -1,4 +1,3 @@
-// src/components/layout/Sidebar.jsx
 import React from 'react';
 import { Home, Heart, Clock, ChevronLeft, ChevronRight } from 'lucide-react';
 import { GENRE_MAP } from '../../constants/genres';
@@ -11,7 +10,9 @@ export function Sidebar({
   isCollapsed,
   onToggleCollapse,
   selectedGenre,
-  onGenreSelect 
+  onGenreSelect,
+  setShows,
+  setLoading
 }) {
   // Define navigation items with their icons and labels
   const navItems = [
@@ -19,6 +20,39 @@ export function Sidebar({
     { id: 'favorites', icon: Heart, label: 'Favorites' },
     { id: 'recent', icon: Clock, label: 'Recently Played' }
   ];
+
+  const handleGenreClick = async (id) => {
+    try {
+      setLoading(true);
+      if (selectedGenre === id) {
+        // If clicking the same genre, clear filter and fetch all shows
+        onGenreSelect(null);
+        const response = await fetch('https://podcast-api.netlify.app/shows');
+        const data = await response.json();
+        setShows(data);
+      } else {
+        // Fetch shows for selected genre
+        onGenreSelect(id);
+        const response = await fetch('https://podcast-api.netlify.app/shows');
+        const data = await response.json();
+        // Filter shows by genre on the client side since API doesn't support genre filtering
+        const filteredShows = data.filter(show => show.genres.includes(Number(id)));
+        setShows(filteredShows);
+      }
+    } catch (error) {
+      console.error('Error fetching shows:', error);
+    } finally {
+      setLoading(false);
+    }
+
+    if (currentView !== 'home') {
+      onViewChange('home');
+    }
+
+    if (showMobile) {
+      onCloseMobile();
+    }
+  };
 
   return (
     <aside 
@@ -30,16 +64,14 @@ export function Sidebar({
         md:relative md:translate-x-0
       `}
     >
-      {/* Sidebar content container */}
-      <div className={`${isCollapsed ? 'p-2' : 'p-6'}`}>
-        {/* Header section with app title and collapse toggle */}
-        <div className="flex items-center justify-between mb-8">
+      <div className={`h-full flex flex-col ${isCollapsed ? 'p-1' : 'p-7'}`}>
+        {/* Header section */}
+        <div className="flex items-center justify-between mb-10">
           {!isCollapsed && (
-            <h1 className="text-2xl font-bold text-purple-600 dark:text-purple-400">
-              Podcast
+            <h1 className="text-2xl font-bold text-purple-500 dark:text-purple-400">
+              Mamela🎙️
             </h1>
           )}
-          {/* Desktop-only collapse button */}
           <button
             onClick={onToggleCollapse}
             className="hidden md:block p-2 rounded-full hover:bg-gray-100 
@@ -77,7 +109,7 @@ export function Sidebar({
 
         {/* Genre filters section - only shown when sidebar is expanded */}
         {!isCollapsed && (
-          <div className="mt-8">
+          <div className="mt-8 overflow-y-auto flex-1">
             <h2 className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-4">
               GENRES
             </h2>
@@ -85,7 +117,7 @@ export function Sidebar({
               {Object.entries(GENRE_MAP).map(([id, title]) => (
                 <button
                   key={id}
-                  onClick={() => onGenreSelect(id)}
+                  onClick={() => handleGenreClick(id)}
                   className={`
                     w-full text-left px-3 py-2 text-sm rounded-lg
                     transition-colors duration-200 flex justify-between items-center
@@ -95,7 +127,6 @@ export function Sidebar({
                   `}
                 >
                   <span>{title}</span>
-                  {/* Show 'Clear' text only when this genre is selected */}
                   {selectedGenre === id && (
                     <span className="text-xs opacity-70">(Clear)</span>
                   )}

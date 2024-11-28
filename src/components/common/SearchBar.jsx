@@ -21,7 +21,7 @@ export function SearchBar({ onSearch }) {
         type="text"
         value={query}
         onChange={(e) => handleSearch(e.target.value)}
-        placeholder="Search podcasts..."
+        placeholder="What do you want to listen to??..."
         className="w-full pl-10 pr-4 py-2 rounded-full border 
                    dark:bg-gray-700 dark:border-gray-600 
                    dark:text-white dark:placeholder-gray-400

@@ -55,9 +55,8 @@ export function AudioPlayer({
   useEffect(() => {
     if (currentEpisode) {
       setIsLoading(true);
-      // Use a placeholder audio file since the API doesn't provide real audio
-      audioRef.current.src = 'https://file-examples.com/storage/fe8c7eef0c6364f6c9504cc/2017/11/file_example_MP3_700KB.mp3';
-      audioRef.current.load();
+      // Use a placeholder audio file since the API oesn't provide real audio
+      audioRef.current.src = 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3';
     }
   }, [currentEpisode]);
 
