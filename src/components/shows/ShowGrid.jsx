@@ -53,6 +53,9 @@ export const ShowGrid = ({ show, onShowSelect, favorites, onToggleFavorite }) =>
         <p className="text-gray-600 dark:text-gray-400 text-sm mb-3 line-clamp-3">
           {show.description}
         </p>
+        <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+          Seasons: {show.seasons}
+        </p>
         <div className="flex flex-wrap gap-2 mb-3">
           {show.genres?.map((genre, index) => (
             <span

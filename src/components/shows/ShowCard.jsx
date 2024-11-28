@@ -11,18 +11,6 @@ export function ShowCard({ show, onShowSelect, isFavorite, onToggleFavorite }) {
                  transition-shadow hover:shadow-lg cursor-pointer"
       onClick={() => onShowSelect(show)}
     >
-      {/* Show image with fallback */}
-      <div className="aspect-w-16 aspect-h-9">
-        <img 
-          src={show.image} 
-          alt={show.title}
-          className="w-full h-48 object-cover"
-          onError={(e) => {
-            e.target.src = '/placeholder-image.jpg'; // Fallback image
-          }}
-        />
-      </div>
-
       <div className="p-4">
         {/* Show title and metadata */}
         <div className="flex justify-between items-start">
