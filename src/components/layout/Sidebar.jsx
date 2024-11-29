@@ -21,6 +21,12 @@ export function Sidebar({
     { id: 'recent', icon: Clock, label: 'Recently Played' }
   ];
 
+  // Convert GENRE_MAP object to array for easier rendering
+  const genres = Object.entries(GENRE_MAP).map(([id, name]) => ({
+    id: parseInt(id),
+    name
+  }));
+
   // Handle genre click
   const handleGenreClick = async (id) => {
     try {
@@ -118,22 +124,19 @@ export function Sidebar({
               GENRES
             </h2>
             <div className="space-y-2">
-              {Object.entries(GENRE_MAP).map(([id, title]) => (
+              
+              {/* Genre List */}
+              {genres.map(genre => (
                 <button
-                  key={id}
-                  onClick={() => handleGenreClick(id)}
-                  className={`
-                    w-full text-left px-3 py-2 text-sm rounded-lg
-                    transition-colors duration-200 flex justify-between items-center
-                    ${selectedGenre === id 
+                  key={genre.id}
+                  onClick={() => handleGenreClick(genre.id)}
+                  className={`w-full text-left px-3 py-2 text-sm rounded-lg transition-colors
+                    ${selectedGenre === genre.id
                       ? 'bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-400'
-                      : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'}
-                  `}
+                      : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                    }`}
                 >
-                  <span>{title}</span>
-                  {selectedGenre === id && (
-                    <span className="text-xs opacity-70">(Clear)</span>
-                  )}
+                  {genre.name}
                 </button>
               ))}
             </div>

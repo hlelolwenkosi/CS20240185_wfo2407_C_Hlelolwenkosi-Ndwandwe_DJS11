@@ -6,82 +6,103 @@ export function AudioPlayer({
   isPlaying, 
   volume, 
   onPlayPause, 
-  onVolumeChange 
+  onVolumeChange,
+  setCompletedEpisodes 
 }) {
-  // Ref to the audio element
   const audioRef = useRef(null);
-  // State to track loading state and playback progress
   const [isLoading, setIsLoading] = useState(false);
-  const [progress, setProgress] = useState(0);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
 
-  // Function to handle progress bar click
+  // Handle progress bar click
   const handleProgressClick = (event) => {
     const audioElement = audioRef.current;
     if (!audioElement) return;
 
-    // Calculate the new time based on the click position
-    const progressBarWidth = event.currentTarget.clientWidth;
-    const clickX = event.nativeEvent.offsetX;
-    const newTime = (clickX / progressBarWidth) * audioElement.duration;
-
-    // Update the audio playback position
+    const rect = event.currentTarget.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const percent = x / rect.width;
+    const newTime = percent * duration;
     audioElement.currentTime = newTime;
   };
 
-  // Handle audio element setup and cleanup
-  useEffect(() => {
-    const audioElement = audioRef.current;
+  // Handle time updates and save progress
+  const handleTimeUpdate = () => {
+    if (audioRef.current) {
+      const current = audioRef.current.currentTime;
+      const duration = audioRef.current.duration;
+      
+      setCurrentTime(current);
 
-    // Set up audio event listeners
-    const handleCanPlay = () => {
-      setIsLoading(false);
-      if (isPlaying) {
-        // Only attempt to play when audio is actually ready
-        audioElement.play().catch(error => {
-          console.error('Playback failed:', error);
-          onPlayPause(false);
+      // Save timestamp
+      const timestamp = {
+        showId: currentEpisode.showId,
+        episodeId: currentEpisode.episode,
+        time: current,
+        duration: duration,
+        lastPlayed: new Date().toISOString()
+      };
+      
+      localStorage.setItem(
+        `timestamp-${currentEpisode.showId}-${currentEpisode.episode}`,
+        JSON.stringify(timestamp)
+      );
+
+      // Check if episode is completed (>90% played)
+      if (current / duration > 0.9) {
+        setCompletedEpisodes(prev => {
+          const episodeKey = `${currentEpisode.showId}-${currentEpisode.episode}`;
+          if (!prev.includes(episodeKey)) {
+            return [...prev, episodeKey];
+          }
+          return prev;
         });
       }
-    };
+    }
+  };
 
-    const handleTimeUpdate = () => {
-      setProgress((audioElement.currentTime / audioElement.duration) * 100);
-    };
+  // Handle audio ended
+  const handleEnded = () => {
+    onPlayPause(false);
+    setCompletedEpisodes(prev => {
+      const episodeKey = `${currentEpisode.showId}-${currentEpisode.episode}`;
+      if (!prev.includes(episodeKey)) {
+        return [...prev, episodeKey];
+      }
+      return prev;
+    });
+  };
 
-    const handleEnded = () => {
-      onPlayPause(false);
-      setProgress(0);
-    };
-
-    // Add event listeners
-    audioElement.addEventListener('canplay', handleCanPlay);
-    audioElement.addEventListener('timeupdate', handleTimeUpdate);
-    audioElement.addEventListener('ended', handleEnded);
-
-    // Cleanup function
-    return () => {
-      audioElement.removeEventListener('canplay', handleCanPlay);
-      audioElement.removeEventListener('timeupdate', handleTimeUpdate);
-      audioElement.removeEventListener('ended', handleEnded);
-    };
-  }, [isPlaying, onPlayPause]);
-
-  // Handle changes to current episode
+  // Load saved timestamp and set audio source
   useEffect(() => {
-    if (currentEpisode) {
+    if (currentEpisode?.audio) {
       setIsLoading(true);
-      // Use a placeholder audio file since the API doesn't provide real audio
-      audioRef.current.src = 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3';
+      setCurrentTime(0);
+      audioRef.current.src = currentEpisode.audio;
+      
+      const savedTimestamp = localStorage.getItem(
+        `timestamp-${currentEpisode.showId}-${currentEpisode.episode}`
+      );
+      
+      if (savedTimestamp) {
+        try {
+          const { time } = JSON.parse(savedTimestamp);
+          audioRef.current.currentTime = time;
+        } catch (error) {
+          console.error('Error parsing saved timestamp:', error);
+        }
+      }
     }
   }, [currentEpisode]);
 
-  // Handle play/pause state changes
+  // Handle play/pause state
   useEffect(() => {
     const audioElement = audioRef.current;
     if (!audioElement) return;
 
+    audioElement.volume = volume;
     if (isPlaying) {
-      if (audioElement.readyState >= 2) { // HAVE_CURRENT_DATA or better
+      if (audioElement.readyState >= 2) {
         audioElement.play().catch(error => {
           console.error('Playback failed:', error);
           onPlayPause(false);
@@ -90,84 +111,126 @@ export function AudioPlayer({
     } else {
       audioElement.pause();
     }
-  }, [isPlaying, onPlayPause]);
+  }, [isPlaying, volume, onPlayPause]);
 
-  // Handle volume changes
+  // Handle page unload warning
   useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.volume = volume;
-    }
-  }, [volume]);
+    const handleBeforeUnload = (event) => {
+      if (isPlaying && audioRef.current && !audioRef.current.ended) {
+        event.preventDefault();
+        event.returnValue = '';
+        return 'Audio is currently playing. Are you sure you want to leave?';
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload, { capture: true });
+    window.addEventListener('unload', handleBeforeUnload, { capture: true });
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload, { capture: true });
+      window.removeEventListener('unload', handleBeforeUnload, { capture: true });
+    };
+  }, [isPlaying]);
+
+  // Format time helper
+  const formatTime = (seconds) => {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = Math.floor(seconds % 60);
+    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+  };
+
+  if (!currentEpisode) return null;
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 p-4">
+    <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t 
+                    border-gray-200 dark:border-gray-700 p-4 shadow-lg">
       <div className="max-w-7xl mx-auto flex items-center gap-4">
-        {/* Episode info */}
-        <div className="flex-1">
-          <h4 className="font-semibold dark:text-white">
-            {currentEpisode?.title || 'Select an episode'}
-          </h4>
+        {/* Episode Info */}
+        <div className="flex items-center gap-4 flex-1">
+          {currentEpisode.showImage && (
+            <img 
+              src={currentEpisode.showImage} 
+              alt={currentEpisode.showTitle}
+              className="w-12 h-12 rounded-lg object-cover"
+            />
+          )}
+          <div>
+            <h3 className="font-semibold dark:text-white">{currentEpisode.title}</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              {currentEpisode.showTitle}
+              {currentEpisode.seasonNumber && ` - Season ${currentEpisode.seasonNumber}`}
+            </p>
+          </div>
         </div>
 
-        {/* Playback controls */}
-        <div className="flex items-center gap-4">
-          {/* Play/pause button */}
+        {/* Audio Controls */}
+        <div className="flex items-center gap-4 flex-1">
+          {/* Play/Pause Button */}
           <button
             onClick={() => onPlayPause(!isPlaying)}
             disabled={isLoading}
-            className={`p-2 rounded-full bg-purple-600 text-white 
-                       hover:bg-purple-700 disabled:opacity-50`}
+            className="p-2 rounded-full bg-purple-600 text-white hover:bg-purple-700
+                     disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isLoading ? (
-              // Loading spinner
-              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              <div className="w-6 h-6 border-2 border-white border-t-transparent 
+                            rounded-full animate-spin" />
             ) : isPlaying ? (
-              // Pause icon
-              <Pause className="w-5 h-5" />
+              <Pause className="w-6 h-6" />
             ) : (
-              // Play icon
-              <Play className="w-5 h-5" />
+              <Play className="w-6 h-6" />
             )}
           </button>
 
-          {/* Volume control */}
-          <div className="flex items-center gap-2">
-            {/* Mute/unmute button */}
-            <button
-              onClick={() => onVolumeChange(volume === 0 ? 1 : 0)}
-              className="text-gray-600 dark:text-gray-400"
-            >
-              {volume === 0 ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
-            </button>
-            {/* Volume slider */}
-            <input
-              type="range"
-              min="0"
-              max="1"
-              step="0.1"
-              value={volume}
-              onChange={(e) => onVolumeChange(parseFloat(e.target.value))}
-              className="w-24"
+          {/* Time Display */}
+          <div className="text-sm text-gray-600 dark:text-gray-400 w-20">
+            {formatTime(currentTime)} / {formatTime(duration)}
+          </div>
+
+          {/* Progress Bar */}
+          <div className="flex-1 h-2 bg-gray-200 dark:bg-gray-700 rounded-full cursor-pointer"
+               onClick={handleProgressClick}>
+            <div 
+              className="h-full bg-purple-600 rounded-full transition-all duration-100"
+              style={{ width: `${(currentTime / duration) * 100 || 0}%` }}
             />
           </div>
         </div>
 
-        {/* Progress bar */}
-        <div className="flex-1 max-w-xl">
-          <div 
-            className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full cursor-pointer"
-            onClick={handleProgressClick}
+        {/* Volume Control */}
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => onVolumeChange(volume === 0 ? 1 : 0)}
+            className="text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
           >
-            <div 
-              className="h-full bg-purple-600 rounded-full transition-all duration-100"
-              style={{ width: `${progress}%` }}
-            />
-          </div>
+            {volume === 0 ? (
+              <VolumeX className="w-6 h-6" />
+            ) : (
+              <Volume2 className="w-6 h-6" />
+            )}
+          </button>
+          <input
+            type="range"
+            min="0"
+            max="1"
+            step="0.1"
+            value={volume}
+            onChange={(e) => onVolumeChange(parseFloat(e.target.value))}
+            className="w-24"
+          />
         </div>
       </div>
 
-      {/* Hidden audio element */}
-      <audio ref={audioRef} preload="auto" />
+      <audio
+        ref={audioRef}
+        preload="auto"
+        onTimeUpdate={handleTimeUpdate}
+        onLoadedMetadata={() => {
+          setDuration(audioRef.current.duration);
+          setIsLoading(false);
+        }}
+        onEnded={handleEnded}
+      />
     </div>
   );
 }

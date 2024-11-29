@@ -5,7 +5,6 @@ import { GENRE_MAP } from '../../constants/genres';
 export function ShowDetail({ 
   show, 
   currentEpisode, 
-  isPlaying, 
   favorites, 
   onBack, 
   onPlayEpisode, 
