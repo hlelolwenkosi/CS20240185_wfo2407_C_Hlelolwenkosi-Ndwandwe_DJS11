@@ -280,7 +280,6 @@ function AppContent() {
       <Header
         onSearch={setSearchQuery}
         onToggleMobileSidebar={() => setShowMobile(!showMobile)}
-        
       />
       
       <div className="flex">

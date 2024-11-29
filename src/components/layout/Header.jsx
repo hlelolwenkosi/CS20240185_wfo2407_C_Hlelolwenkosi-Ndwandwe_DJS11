@@ -1,5 +1,5 @@
 import React from 'react';
-import { Menu } from 'lucide-react';
+import { Search, Menu } from 'lucide-react';
 import { SearchBar } from '../common/SearchBar';
 import { ThemeToggle } from '../common/ThemeToggle';
 
@@ -16,12 +16,12 @@ export function Header({ onMenuClick, onSearch }) {
           >
             <Menu className="w-6 h-6" />
           </button>
-          
+
           {/* Search bar - centered on desktop */}
           <div className="flex-1 max-w-xl mx-auto">
             <SearchBar onSearch={onSearch} />
           </div>
-          
+
           {/* Theme toggle */}
           <ThemeToggle />
         </div>
