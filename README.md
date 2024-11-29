@@ -7,7 +7,7 @@ This React-based web application enables users to browse, play, and manage podca
 1. Clone the repository: 'https://github.com/hlelolwenkosi/CS20240185_wfo2407_C_Hlelolwenkosi-Ndwandwe_DJS11.git'
 2. Install dependencies: `npm install`
 3. Start the development server: `npm start`
-4. Open the app in your browser at `http://localhost:3000`
+5. Netlify: https://mamela-podcast.netlify.app/
 
 ## Features
 - Browse podcast shows and episodes
