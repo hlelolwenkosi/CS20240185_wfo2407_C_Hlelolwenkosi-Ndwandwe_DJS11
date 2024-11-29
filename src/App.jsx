@@ -5,7 +5,6 @@ import { Header } from './components/layout/Header';
 import { Sidebar } from './components/layout/Sidebar';
 import { AudioPlayer } from './components/layout/AudioPlayer';
 import { ShowGrid } from './components/shows/ShowGrid';
-
 import { ShowPage } from './pages/showPage';
 import { LoadingSpinner } from './components/common/LoadingSpinner';
 import { useLocalStorage } from './hooks/useLocalStorage';
@@ -281,6 +280,7 @@ function AppContent() {
       <Header
         onSearch={setSearchQuery}
         onToggleMobileSidebar={() => setShowMobile(!showMobile)}
+        
       />
       
       <div className="flex">
