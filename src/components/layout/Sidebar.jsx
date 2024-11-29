@@ -69,6 +69,7 @@ export function Sidebar({
         <div className="flex items-center justify-between mb-10">
           {!isCollapsed && (
             <h1 className="text-2xl font-bold text-purple-500 dark:text-purple-400">
+              
               Mamela🎙️
             </h1>
           )}

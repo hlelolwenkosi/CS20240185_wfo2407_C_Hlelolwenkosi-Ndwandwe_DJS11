@@ -1,4 +1,3 @@
-// src/components/layout/AudioPlayer.jsx
 import React, { useRef, useEffect, useState } from 'react';
 import { Play, Pause, Volume2, VolumeX } from 'lucide-react';
 
@@ -9,14 +8,30 @@ export function AudioPlayer({
   onPlayPause, 
   onVolumeChange 
 }) {
+  // Ref to the audio element
   const audioRef = useRef(null);
+  // State to track loading state and playback progress
   const [isLoading, setIsLoading] = useState(false);
   const [progress, setProgress] = useState(0);
+
+  // Function to handle progress bar click
+  const handleProgressClick = (event) => {
+    const audioElement = audioRef.current;
+    if (!audioElement) return;
+
+    // Calculate the new time based on the click position
+    const progressBarWidth = event.currentTarget.clientWidth;
+    const clickX = event.nativeEvent.offsetX;
+    const newTime = (clickX / progressBarWidth) * audioElement.duration;
+
+    // Update the audio playback position
+    audioElement.currentTime = newTime;
+  };
 
   // Handle audio element setup and cleanup
   useEffect(() => {
     const audioElement = audioRef.current;
-    
+
     // Set up audio event listeners
     const handleCanPlay = () => {
       setIsLoading(false);
@@ -55,7 +70,7 @@ export function AudioPlayer({
   useEffect(() => {
     if (currentEpisode) {
       setIsLoading(true);
-      // Use a placeholder audio file since the API oesn't provide real audio
+      // Use a placeholder audio file since the API doesn't provide real audio
       audioRef.current.src = 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3';
     }
   }, [currentEpisode]);
@@ -96,6 +111,7 @@ export function AudioPlayer({
 
         {/* Playback controls */}
         <div className="flex items-center gap-4">
+          {/* Play/pause button */}
           <button
             onClick={() => onPlayPause(!isPlaying)}
             disabled={isLoading}
@@ -103,22 +119,27 @@ export function AudioPlayer({
                        hover:bg-purple-700 disabled:opacity-50`}
           >
             {isLoading ? (
+              // Loading spinner
               <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
             ) : isPlaying ? (
+              // Pause icon
               <Pause className="w-5 h-5" />
             ) : (
+              // Play icon
               <Play className="w-5 h-5" />
             )}
           </button>
 
           {/* Volume control */}
           <div className="flex items-center gap-2">
+            {/* Mute/unmute button */}
             <button
               onClick={() => onVolumeChange(volume === 0 ? 1 : 0)}
               className="text-gray-600 dark:text-gray-400"
             >
               {volume === 0 ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
             </button>
+            {/* Volume slider */}
             <input
               type="range"
               min="0"
@@ -133,7 +154,10 @@ export function AudioPlayer({
 
         {/* Progress bar */}
         <div className="flex-1 max-w-xl">
-          <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full">
+          <div 
+            className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full cursor-pointer"
+            onClick={handleProgressClick}
+          >
             <div 
               className="h-full bg-purple-600 rounded-full transition-all duration-100"
               style={{ width: `${progress}%` }}

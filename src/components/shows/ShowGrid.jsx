@@ -61,9 +61,9 @@ export const ShowGrid = ({ show, onShowSelect, favorites, onToggleFavorite }) =>
           {show.genres.map(genreId => (
             <span
               key={genreId}
-              className="text-sm text-gray-500 dark:text-gray-400 mb-2"
+              className="text-sm bg-purple-100 rounded-lg text-gray-500 dark:text-gray-400 mb-2"
             >
-              Genre: {GENRE_MAP[genreId]}
+              {GENRE_MAP[genreId]}
             </span>
           ))}
         </div>
