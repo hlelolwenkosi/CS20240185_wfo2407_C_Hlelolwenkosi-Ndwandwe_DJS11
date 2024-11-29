@@ -21,6 +21,7 @@ export function Sidebar({
     { id: 'recent', icon: Clock, label: 'Recently Played' }
   ];
 
+  // Handle genre click
   const handleGenreClick = async (id) => {
     try {
       setLoading(true);
@@ -45,10 +46,12 @@ export function Sidebar({
       setLoading(false);
     }
 
+    // Switch to home view if not already on it
     if (currentView !== 'home') {
       onViewChange('home');
     }
 
+    // Close mobile sidebar if open
     if (showMobile) {
       onCloseMobile();
     }
@@ -69,10 +72,10 @@ export function Sidebar({
         <div className="flex items-center justify-between mb-10">
           {!isCollapsed && (
             <h1 className="text-2xl font-bold text-purple-500 dark:text-purple-400">
-              
               Mamela🎙️
             </h1>
           )}
+          {/* Toggle sidebar collapse button */}
           <button
             onClick={onToggleCollapse}
             className="hidden md:block p-2 rounded-full hover:bg-gray-100 

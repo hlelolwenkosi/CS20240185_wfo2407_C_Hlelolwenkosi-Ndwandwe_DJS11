@@ -1,4 +1,3 @@
-// ShowDetail.jsx
 import React, { useState, useEffect } from 'react';
 import { LoadingSpinner } from '../common/LoadingSpinner';
 import { GENRE_MAP } from '../../constants/genres';
@@ -12,11 +11,13 @@ export function ShowDetail({
   onPlayEpisode, 
   onToggleFavorite 
 }) {
+  // State to store seasons, selected season, loading state, and error
   const [seasons, setSeasons] = useState([]);
   const [selectedSeason, setSelectedSeason] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // Fetch seasons when the show changes
   useEffect(() => {
     const fetchSeasons = async () => {
       try {
@@ -50,6 +51,7 @@ export function ShowDetail({
     console.log('Selected season changed:', selectedSeason);
   }, [selectedSeason]);
 
+  // Check if an episode is in favorites
   const isEpisodeFavorite = (episode) => {
     return favorites.some(fav => 
       fav.showId === show.id && 
@@ -58,6 +60,7 @@ export function ShowDetail({
     );
   };
 
+  // Handle season change
   const handleSeasonChange = (season) => {
     console.log('Changing to season:', season);
     setSelectedSeason(season);
@@ -65,6 +68,7 @@ export function ShowDetail({
 
   return (
     <div className="p-4 md:p-6 w-full max-w-full">
+      {/* Back button */}
       <button
         onClick={onBack}
         className="mb-4 flex items-center text-purple-600 hover:text-purple-700"
@@ -75,6 +79,7 @@ export function ShowDetail({
         Back to Shows
       </button>
 
+      {/* Show details */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 md:p-6 mb-6">
         <div className="flex flex-col md:flex-row gap-4 md:gap-6">
           <img
@@ -89,6 +94,7 @@ export function ShowDetail({
             <p className="text-gray-600 dark:text-gray-400 mb-4 text-sm md:text-base">
               {show.description}
             </p>
+            {/* Genre tags */}
             <div className="flex flex-wrap gap-2 mb-4">
               {show.genres?.map(genreId => (
                 <span
@@ -128,13 +134,16 @@ export function ShowDetail({
         </div>
       </div>
 
+      {/* Loading state */}
       {loading ? (
         <div className="flex justify-center py-8">
           <LoadingSpinner />
         </div>
       ) : error ? (
+        // Error state
         <div className="text-red-600 p-4">{error}</div>
       ) : selectedSeason ? (
+        // Episodes list
         <div className="space-y-4">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl md:text-2xl font-bold dark:text-white">
@@ -165,7 +174,9 @@ export function ShowDetail({
                     </p>
                   )}
                 </div>
+                {/* Episode actions */}
                 <div className="flex gap-2 md:flex-shrink-0">
+                  {/* Play/Pause button */}
                   <button
                     onClick={() => {
                       const episodeWithDetails = {
@@ -184,6 +195,7 @@ export function ShowDetail({
                     {currentEpisode?.episode === episode.episode && 
                      currentEpisode?.seasonNumber === selectedSeason.season ? 'Pause' : 'Play'}
                   </button>
+                  {/* Favorite/Unfavorite button */}
                   <button
                     onClick={() => {
                       const episodeWithDetails = {
