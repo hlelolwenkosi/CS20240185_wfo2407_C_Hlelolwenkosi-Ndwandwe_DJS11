@@ -5,7 +5,7 @@ import { Header } from './components/layout/Header';
 import { Sidebar } from './components/layout/Sidebar';
 import { AudioPlayer } from './components/layout/AudioPlayer';
 import { ShowGrid } from './components/shows/ShowGrid';
-import { ShowPage } from './pages/showPage';
+import { ShowPage } from './pages/ShowPage';
 import { LoadingSpinner } from './components/common/LoadingSpinner';
 import { useLocalStorage } from './hooks/useLocalStorage';
 
